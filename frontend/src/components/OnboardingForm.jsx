@@ -31,7 +31,9 @@ const OnboardingForm = () => {
     isDisabled: '',
     isMinority: '',
     isStudent: '',
+    employmentStatus: '',
     isBPL: '',
+    annualIncome: '',
     isDistress: ''
   });
 
@@ -166,21 +168,61 @@ const OnboardingForm = () => {
               name="isStudent" 
               onChange={handleChange} 
             />
+          </div>
+
+          {/* Conditional Employment Status */}
+          {formData.isStudent === 'No' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Employment Status</label>
+              <select
+                name="employmentStatus"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all"
+                onChange={handleChange}
+              >
+                <option value="">Select Employment Status</option>
+                <option value="Unemployed">Unemployed</option>
+                <option value="Employed">Employed</option>
+                <option value="Self Employed">Self Employed</option>
+                <option value="Entrepreneur">Entrepreneur</option>
+              </select>
+            </div>
+          )}
+
+          <div className="grid md:grid-cols-2 gap-6">
             <YesNoQuestion 
               label="Do you belong to BPL (Below Poverty Line) category?" 
               name="isBPL" 
               onChange={handleChange} 
             />
+            
+            {/* Conditional Annual Income */}
+            {formData.isBPL === 'No' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Family's Annual Income</label>
+                <input
+                  type="number"
+                  name="annualIncome"
+                  required
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none transition-all"
+                  placeholder="Enter annual income"
+                  onChange={handleChange}
+                />
+              </div>
+            )}
           </div>
 
-          <div className="border-t border-gray-100 pt-6">
-            <YesNoQuestion 
-              label="Are you in any condition of extreme hardship? (Destitute / Penury / Distress)" 
-              name="isDistress" 
-              onChange={handleChange} 
-              fullWidth
-            />
-          </div>
+          {/* Conditional Distress */}
+          {formData.isBPL === 'Yes' && (
+            <div className="border-t border-gray-100 pt-6">
+              <YesNoQuestion 
+                label="Are you in any condition of extreme hardship? (Destitute / Penury / Distress)" 
+                name="isDistress" 
+                onChange={handleChange} 
+                fullWidth
+              />
+            </div>
+          )}
 
           <button
             type="submit"

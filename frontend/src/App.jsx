@@ -8,6 +8,8 @@ import WhyUs from './components/WhyUs';
 import Footer from './components/Footer';
 import Dashboard from './components/Dashboard';
 import OnboardingForm from './components/OnboardingForm';
+import Profile from './components/Profile';
+import Chat from './components/Chat';
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -88,6 +90,32 @@ const ClerkProviderWithRoutes = () => {
             <>
               <SignedIn>
                 <Dashboard />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <>
+              <SignedIn>
+                <Profile />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            <>
+              <SignedIn>
+                <Chat />
               </SignedIn>
               <SignedOut>
                 <RedirectToSignIn />

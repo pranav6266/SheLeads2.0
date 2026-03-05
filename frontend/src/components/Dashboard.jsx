@@ -13,7 +13,8 @@ import {
   ArrowUpDown,
   Wallet,
   TrendingUp,
-  GraduationCap
+  GraduationCap,
+  MessageSquare
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -103,10 +104,20 @@ const Dashboard = () => {
               <FileText size={20} />
               My Applications
             </a>
-            <a href="#" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+            <button 
+              onClick={() => navigate('/chat')}
+              className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors text-left"
+            >
+              <MessageSquare size={20} />
+              Chat with AI
+            </button>
+            <button 
+              onClick={() => navigate('/profile')}
+              className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors text-left"
+            >
               <UserCircle size={20} />
               Business Profile
-            </a>
+            </button>
           </nav>
 
           <div className="mt-8 p-4 bg-rose-50 rounded-2xl">
