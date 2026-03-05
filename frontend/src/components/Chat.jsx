@@ -11,6 +11,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { chatWithAI } from '../services/api';
 
 const Chat = () => {
@@ -125,7 +127,20 @@ const Chat = () => {
               
               <div className={`max-w-2xl space-y-4 ${msg.sender === 'user' ? 'items-end flex flex-col' : ''}`}>
                 <div className={`p-6 rounded-2xl shadow-sm ${msg.sender === 'user' ? 'bg-rose-500 text-white rounded-tr-none' : 'bg-white text-gray-700 rounded-tl-none'}`}>
-                  <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                  {msg.sender === 'user' ? (
+                    <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="markdown-content prose prose-sm max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-a:text-rose-600 prose-strong:text-gray-900"
+                    >
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {msg.text}
+                      </ReactMarkdown>
+                    </motion.div>
+                  )}
                 </div>
 
                 {msg.cards && msg.cards.length > 0 && (
