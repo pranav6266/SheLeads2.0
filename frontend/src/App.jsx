@@ -11,6 +11,8 @@ import OnboardingForm from './components/OnboardingForm';
 import Profile from './components/Profile';
 import Chat from './components/Chat';
 
+import AuthenticatedNavbar from './components/AuthenticatedNavbar';
+
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
 if (!PUBLISHABLE_KEY) {
@@ -89,6 +91,7 @@ const ClerkProviderWithRoutes = () => {
           element={
             <>
               <SignedIn>
+                <AuthenticatedNavbar />
                 <Dashboard />
               </SignedIn>
               <SignedOut>
@@ -102,6 +105,7 @@ const ClerkProviderWithRoutes = () => {
           element={
             <>
               <SignedIn>
+                <AuthenticatedNavbar />
                 <Profile />
               </SignedIn>
               <SignedOut>
@@ -115,6 +119,7 @@ const ClerkProviderWithRoutes = () => {
           element={
             <>
               <SignedIn>
+                <AuthenticatedNavbar />
                 <Chat />
               </SignedIn>
               <SignedOut>
