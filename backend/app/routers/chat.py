@@ -14,12 +14,15 @@ async def chat(
 ):
     user_profile = extract_user_info(data.message)
 
+    # Use the profile from request if available and not empty, otherwise use extracted
+    final_user_profile = data.user_profile if data.user_profile and any(data.user_profile.values()) else user_profile
+
     search_query = f"""
-    Age: {user_profile.get("age")}
-    Gender: {user_profile.get("gender")}
-    Occupation: {user_profile.get("occupation")}
-    State: {user_profile.get("state")}
-    Income: {user_profile.get("income")}
+    Age: {final_user_profile.get("age")}
+    Gender: {final_user_profile.get("gender")}
+    Occupation: {final_user_profile.get("occupation")}
+    State: {final_user_profile.get("state")}
+    Income: {final_user_profile.get("income")}
     Query: {data.message}
     """
 
@@ -27,13 +30,16 @@ async def chat(
 
     context = "\n\n".join([s["text"] for s in schemes])
 
-    response = chat_with_context(
-        prompt=data.message, context=context, user_profile=user_profile
+    response_text, should_show_schemes = chat_with_context(
+        prompt=data.message,
+        context=context,
+        user_profile=final_user_profile,
+        chat_history=data.chat_history
     )
 
     return ChatResponse(
         status="success",
-        user_profile=ExtractedInfo(**user_profile),
-        schemes=[SchemeResult(**s) for s in schemes],
-        response=response,
+        user_profile=ExtractedInfo(**final_user_profile),
+        schemes=[SchemeResult(**s) for s in schemes] if should_show_schemes else [],
+        response=response_text,
     )
