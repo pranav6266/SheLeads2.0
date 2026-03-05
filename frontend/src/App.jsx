@@ -1,35 +1,111 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { ClerkProvider, SignIn, SignUp, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import Schemes from './components/Schemes';
+import WhyUs from './components/WhyUs';
+import Footer from './components/Footer';
+import Dashboard from './components/Dashboard';
+import OnboardingForm from './components/OnboardingForm';
 
-function App() {
-  const [count, setCount] = useState(0)
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key")
 }
 
-export default App
+const LandingPage = () => (
+  <>
+    <Navbar />
+    <main>
+      <Hero />
+      <Schemes />
+      <WhyUs />
+    </main>
+    <Footer />
+  </>
+);
+
+const ClerkProviderWithRoutes = () => {
+  const navigate = useNavigate();
+
+  return (
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      navigate={(to) => navigate(to)}
+      appearance={{
+        variables: {
+          colorPrimary: '#f43f5e',
+          colorTextOnPrimaryBackground: 'white',
+        },
+        elements: {
+          card: 'shadow-xl border border-gray-100 rounded-2xl',
+          formButtonPrimary: 'bg-rose-500 hover:bg-rose-600 text-white',
+          footerActionLink: 'text-rose-500 hover:text-rose-600',
+        }
+      }}
+    >
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/sign-in/*"
+          element={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+              <SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" />
+            </div>
+          }
+        />
+        <Route
+          path="/sign-up/*"
+          element={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+              <SignUp 
+                routing="path" 
+                path="/sign-up" 
+                signInUrl="/sign-in"
+                forceRedirectUrl="/onboarding"
+              />
+            </div>
+          }
+        />
+        <Route
+          path="/onboarding"
+          element={
+            <>
+              <SignedIn>
+                <OnboardingForm />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <>
+              <SignedIn>
+                <Dashboard />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+      </Routes>
+    </ClerkProvider>
+  );
+};
+
+function App() {
+  return (
+    <BrowserRouter>
+      <ClerkProviderWithRoutes />
+    </BrowserRouter>
+  );
+}
+
+export default App;
