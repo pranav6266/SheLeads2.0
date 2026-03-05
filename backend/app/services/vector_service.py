@@ -39,6 +39,7 @@ States: {", ".join(fields.get("beneficiaryState", []))}
             "categories": ", ".join(fields.get("schemeCategory", [])),
             "tags": ", ".join(fields.get("tags", [])),
             "states": ", ".join(fields.get("beneficiaryState", [])),
+            "slug": fields.get("slug", ""),
         }
 
         schemes.append({"id": scheme_id, "text": text.strip(), "metadata": metadata})
@@ -72,29 +73,42 @@ def vectorize_schemes(filepath: str = "myscheme_rag_dataset.json"):
     schemes = load_schemes_from_json(filepath)
     print(f"Loaded {len(schemes)} schemes. Generating embeddings...")
 
-    points = []
-    for i, scheme in enumerate(schemes):
-        if i % 100 == 0:
-            print(f"Processing scheme {i}/{len(schemes)}...")
+    # We process in batches to avoid memory issues and timeouts
+    batch_size = 100
+    total_processed = 0
 
-        embedding = get_embedding(scheme["text"])
+    for i in range(0, len(schemes), batch_size):
+        batch = schemes[i:i + batch_size]
+        print(f"Processing batch {i} to {min(i + batch_size, len(schemes))}...")
+        
+        batch_points = []
+        for j, scheme in enumerate(batch):
+            global_idx = i + j
+            embedding = get_embedding(scheme["text"])
+            
+            # Use slug as the ID if available in metadata, otherwise use the provided ID
+            slug = scheme["metadata"].get("slug", scheme["id"])
 
-        points.append(
-            PointStruct(
-                id=i,
-                vector=embedding,
-                payload={
-                    "scheme_id": scheme["id"],
-                    "text": scheme["text"],
-                    **scheme["metadata"],
-                },
+            batch_points.append(
+                PointStruct(
+                    id=global_idx,
+                    vector=embedding,
+                    payload={
+                        "scheme_id": slug,
+                        "text": scheme["text"],
+                        **scheme["metadata"],
+                    },
+                )
             )
-        )
+        
+        try:
+            client.upsert(collection_name=COLLECTION_NAME, points=batch_points)
+            total_processed += len(batch_points)
+        except Exception as e:
+            print(f"Error uploading batch {i}: {e}")
 
-    client.upsert(collection_name=COLLECTION_NAME, points=points)
-
-    print(f"Successfully vectorized {len(schemes)} schemes.")
-    return {"status": "success", "count": len(schemes)}
+    print(f"Successfully vectorized {total_processed} schemes.")
+    return {"status": "success", "count": total_processed}
 
 
 def search_schemes(query: str, n_results: int = 5) -> list[dict]:
@@ -102,7 +116,12 @@ def search_schemes(query: str, n_results: int = 5) -> list[dict]:
 
     count = client.count(collection_name=COLLECTION_NAME).count
     if count == 0:
-        raise ValueError("No schemes in database. Run vectorize first.")
+        # Auto-vectorize if empty
+        print("Database empty. Auto-triggering vectorization...")
+        vectorize_schemes()
+        count = client.count(collection_name=COLLECTION_NAME).count
+        if count == 0:
+             raise ValueError("Failed to vectorize schemes.")
 
     query_embedding = get_embedding(query)
 
