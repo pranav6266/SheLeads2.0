@@ -4,6 +4,8 @@ from typing import Optional
 
 class UserInput(BaseModel):
     message: str
+    user_profile: dict = {}
+    chat_history: list[dict[str, str]] = []
 
 
 class ExtractedInfo(BaseModel):
